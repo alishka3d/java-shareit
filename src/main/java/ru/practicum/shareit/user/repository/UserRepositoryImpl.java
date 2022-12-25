@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exceptions.EntityAlreadyExistException;
 import ru.practicum.shareit.exceptions.EntityNotFoundException;
-import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
@@ -55,22 +54,20 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User update(Long id, User user) {
         if (users.containsKey(id)) {
-            if (id != user.getId() && users.containsKey(user.getId())) {
-                log.error("Ошибка обновления пользователя. id {} занят.", user.getId());
-                throw new EntityAlreadyExistException("Ошибка обновления пользователя. id " + id + " занят.");
-            } else if (user.getEmail() == null) {
-                log.error("Ошибка обновления пользователя. Email = null");
-                throw new ValidationException("Ошибка обновления пользователя. Email = null");
-            } else if (!users.get(id).getEmail().equals(user.getEmail()) && emails.contains(user.getEmail())) {
-                log.error("Ошибка обновления пользователя. email {} занят.", user.getEmail());
-                throw new EntityAlreadyExistException("Ошибка обновления пользователя. email " + user.getEmail() + " занят.");
-            } else {
-                log.info("Пользователь с id {} обновлен.", id);
+            if (user.getEmail() != null && !user.getEmail().isBlank()) {
+                if (!users.get(id).getEmail().equals(user.getEmail()) && emails.contains(user.getEmail())) {
+                    log.error("Ошибка обновления пользователя. email {} занят.", user.getEmail());
+                    throw new EntityAlreadyExistException("Ошибка обновления пользователя. email " + user.getEmail() + " занят.");
+                }
+                emails.remove(users.get(id).getEmail());
                 emails.add(user.getEmail());
-                users.remove(id);
-                users.put(user.getId(), user);
-                return users.get(user.getId());
+                users.get(id).setEmail(user.getEmail());
             }
+            if (user.getName() != null && !user.getName().isBlank()) {
+                users.get(id).setName(user.getName());
+            }
+            log.info("Пользователь с id {} обновлен.", id);
+            return users.get(id);
         }
         log.error("Пользователь с id {} не найден.", id);
         throw new EntityNotFoundException("Пользователь с id " + id + " не найден.");

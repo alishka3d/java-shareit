@@ -2,6 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -25,6 +26,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(User user) {
+        if (user.getEmail() == null) {
+            throw new ValidationException("E-mail не должен быть пустым.");
+        }
+        if (!user.getEmail().contains("@")) {
+            throw new ValidationException("Введен некорректный e-mail.");
+        }
         return userRepository.create(user);
     }
 
