@@ -6,8 +6,6 @@ import java.util.List;
 
 public interface ItemService {
 
-    List<Item> getAllItems();
-
     List<Item> getAllByUserId(Long userId);
 
     Item getItemById(Long itemId);

@@ -20,11 +20,6 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
 
     @Override
-    public List<Item> getAllItems() {
-        return itemRepository.findAll();
-    }
-
-    @Override
     public List<Item> getAllByUserId(Long userId) {
         userRepository.findById(userId);
         return itemRepository.findAllByUserId(userId);

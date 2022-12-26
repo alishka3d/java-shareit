@@ -23,12 +23,6 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public List<Item> findAll() {
-        log.info("Все вещи");
-        return new ArrayList<>(items.values());
-    }
-
-    @Override
     public List<Item> findAllByUserId(Long userId) {
         log.info("Все вещи пользователя с id {}", userId);
         return items.values().stream().filter(f -> f.getOwner().getId() == userId)

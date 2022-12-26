@@ -6,7 +6,6 @@ import java.util.List;
 
 public interface ItemRepository {
 
-    List<Item> findAll();
     List<Item> findAllByUserId(Long userId);
     Item getItemById(Long itemId);
     List<Item> findItemsByText(String text);
