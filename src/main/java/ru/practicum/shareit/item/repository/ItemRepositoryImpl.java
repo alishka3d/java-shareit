@@ -37,11 +37,10 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public List<Item> findItemsByText(String text) {
+        log.info("Найденные вещи:");
         if (text.isEmpty()) {
-            log.info("Найденные вещи:");
             return new ArrayList<>();
         }
-        log.info("Найденные вещи:");
         return items.values()
                 .stream().filter(Item::getAvailable)
                 .filter(f -> f.getName().toLowerCase().contains(text.toLowerCase()) ||

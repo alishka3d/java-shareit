@@ -8,10 +8,8 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/items")
 @AllArgsConstructor
@@ -19,8 +17,9 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<Item> getItemsByUserId(@RequestHeader("X-Sharer-User-Id") Long id) {
-        return itemService.getAllByUserId(id);
+    public List<ItemDto> getItemsByUserId(@RequestHeader("X-Sharer-User-Id") Long id) {
+        return itemService.getAllByUserId(id).stream()
+                .map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
