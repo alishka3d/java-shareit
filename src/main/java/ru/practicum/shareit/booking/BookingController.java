@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.booking.status.State;
 import ru.practicum.shareit.booking.status.Status;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class BookingController {
     public List<BookingDto> getAllBookings(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String stateParam) {
-        Status state = Status.from(stateParam);
+        State state = State.from(stateParam);
         if (state == null) {
             throw new IllegalArgumentException("Unknown state: " + stateParam);
         }
@@ -31,7 +32,7 @@ public class BookingController {
     public List<BookingDto> getAllBookingItemsUser(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String stateParam) {
-        Status state = Status.from(stateParam);
+        State state = State.from(stateParam);
         if (state == null) {
             throw new IllegalArgumentException("Unknown state: " + stateParam);
         }

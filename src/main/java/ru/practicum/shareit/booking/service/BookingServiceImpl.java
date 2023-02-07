@@ -9,6 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.booking.status.State;
 import ru.practicum.shareit.booking.status.Status;
 import ru.practicum.shareit.exceptions.BookingException;
 import ru.practicum.shareit.exceptions.EntityNotFoundException;
@@ -39,7 +40,7 @@ public class BookingServiceImpl implements BookingService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь %s не существует.", userId)));
-        switch (Status.valueOf(stateParam)) {
+        switch (State.valueOf(stateParam)) {
             case CURRENT:
                 log.info("Все бронирования пользователя {} со статусом {}", userId, stateParam);
                 return bookingRepository
@@ -112,7 +113,7 @@ public class BookingServiceImpl implements BookingService {
             throw new EntityNotFoundException("У пользователя нет вещей");
         }
 
-        switch (Status.valueOf(stateParam)) {
+        switch (State.valueOf(stateParam)) {
             case CURRENT:
                 log.info("Текущие бронирования владельца с id {} ", userId);
                 return bookingRepository

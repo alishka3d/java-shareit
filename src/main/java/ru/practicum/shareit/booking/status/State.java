@@ -1,13 +1,16 @@
 package ru.practicum.shareit.booking.status;
 
-public enum Status {
+public enum State {
+    ALL,
+    CURRENT,
+    PAST,
+    FUTURE,
     WAITING,
     REJECTED,
-    APPROVED,
-    CANCELED;
+    APPROVED;
 
-    public static Status from(String stateParam) {
-        for (Status value : Status.values()) {
+    public static State from(String stateParam) {
+        for (State value : State.values()) {
             if (value.name().equals(stateParam)) {
                 return value;
             }
