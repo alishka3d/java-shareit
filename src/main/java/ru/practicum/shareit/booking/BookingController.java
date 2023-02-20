@@ -5,8 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.booking.status.State;
-import ru.practicum.shareit.booking.status.Status;
 
 import java.util.List;
 
@@ -20,23 +18,19 @@ public class BookingController {
     @GetMapping
     public List<BookingDto> getAllBookings(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL") String stateParam) {
-        State state = State.from(stateParam);
-        if (state == null) {
-            throw new IllegalArgumentException("Unknown state: " + stateParam);
-        }
-        return bookingService.getAllBookings(userId, stateParam);
+            @RequestParam(name = "state", defaultValue = "ALL") String stateParam,
+            @RequestParam(name = "from", defaultValue = "0") int from,
+            @RequestParam(name = "size", defaultValue = "20") int size) {
+        return bookingService.getAllBookings(userId, stateParam, from, size);
     }
 
     @GetMapping(value = "/owner")
     public List<BookingDto> getAllBookingItemsUser(
             @RequestHeader("X-Sharer-User-Id") Long userId,
-            @RequestParam(name = "state", defaultValue = "ALL") String stateParam) {
-        State state = State.from(stateParam);
-        if (state == null) {
-            throw new IllegalArgumentException("Unknown state: " + stateParam);
-        }
-        return bookingService.getAllBookingItemsUser(userId, stateParam);
+            @RequestParam(name = "state", defaultValue = "ALL") String stateParam,
+            @RequestParam(name = "from", defaultValue = "0") int from,
+            @RequestParam(name = "size", defaultValue = "20") int size) {
+        return bookingService.getAllBookingItemsUser(userId, stateParam, from, size);
     }
 
     @GetMapping(value = "/{bookingId}")

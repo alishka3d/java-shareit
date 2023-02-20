@@ -1,11 +1,13 @@
 package ru.practicum.shareit.item.mapper;
 
+import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.ArrayList;
 
+@Component
 public class ItemMapper {
 
     public static Item toItem(ItemDto itemDto) {
@@ -14,8 +16,8 @@ public class ItemMapper {
                 itemDto.getName(),
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
-                itemDto.getOwner(),
-                itemDto.getRequest());
+                null,
+                itemDto.getRequestId());
     }
 
     public static ItemDto toItemDto(Item item) {
@@ -24,8 +26,7 @@ public class ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
-                item.getOwner(),
-                item.getRequest());
+                item.getRequestId());
     }
 
     public static ItemDtoWithBooking toItemDtoWithBooking(Item item) {
