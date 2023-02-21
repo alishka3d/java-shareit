@@ -245,10 +245,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
     public void removeBookingById(Long bookingId) {
-        bookingRepository.findById(bookingId).orElseThrow(() -> new EntityNotFoundException(
-                String.format("Бронирование %s не существует.", bookingId)));
         log.info("Бронирование с id {} удалено", bookingId);
         bookingRepository.deleteById(bookingId);
     }
@@ -267,8 +264,8 @@ public class BookingServiceImpl implements BookingService {
     private void validateStatus(String stateParam, int from, int size) {
         State state = State.from(stateParam);
         if (state == null) {
-            log.error("Unknown state: " + stateParam);
-            throw new IllegalArgumentException("Unknown state: " + stateParam);
+            log.error("Unknown Status: " + stateParam);
+            throw new IllegalArgumentException("Unknown Status: " + stateParam);
         }
         if (from < 0 || size <= 0) {
             log.error("Переданы некорректные значения from и/или size");

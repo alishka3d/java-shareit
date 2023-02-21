@@ -125,8 +125,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public void deleteItem(Long id) {
-        itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
-                String.format("Пользователя с %s не существует.", id)));
         log.info("Удалена вещь с id {}", id);
         itemRepository.deleteById(id);
     }
