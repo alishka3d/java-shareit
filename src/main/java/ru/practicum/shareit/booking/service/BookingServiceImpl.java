@@ -264,8 +264,8 @@ public class BookingServiceImpl implements BookingService {
     private void validateStatus(String stateParam, int from, int size) {
         State state = State.from(stateParam);
         if (state == null) {
-            log.error("Unknown Status: " + stateParam);
-            throw new IllegalArgumentException("Unknown Status: " + stateParam);
+            log.error("Unknown state: " + stateParam);
+            throw new IllegalArgumentException("Unknown state: " + stateParam);
         }
         if (from < 0 || size <= 0) {
             log.error("Переданы некорректные значения from и/или size");

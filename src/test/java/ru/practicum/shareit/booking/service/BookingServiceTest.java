@@ -260,7 +260,7 @@ class BookingServiceTest {
                         0,
                         20));
 
-        assertEquals("Unknown Status: UNSUPPORTED_STATUS", exception.getMessage());
+        assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
     }
 
     @Test
@@ -583,7 +583,7 @@ class BookingServiceTest {
                         0,
                         20));
 
-        assertEquals("Unknown Status: UNSUPPORTED_STATUS", exception.getMessage());
+        assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
     }
 
     @Test
