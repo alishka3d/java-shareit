@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.PageRequestOverride;
 import ru.practicum.shareit.booking.dto.BookingItemDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -39,8 +40,15 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
-    public List<ItemDtoWithBooking> getAllByUserId(Long userId) {
-        List<ItemDtoWithBooking> itemsDtoWithBookingList = itemRepository.findAll().stream()
+    public List<ItemDtoWithBooking> getAllByUserId(Long userId, int from, int size) {
+
+        if (from < 0 || size <= 0) {
+            log.error("Переданы некорректные значения from и/или size");
+            throw new ValidationException("Переданы некорректные значения from и/или size");
+        }
+        PageRequestOverride pageRequest = PageRequestOverride.of(from, size);
+
+        List<ItemDtoWithBooking> itemsDtoWithBookingList = itemRepository.findAll(pageRequest).stream()
                 .filter(item -> item.getOwner().getId().equals(userId))
                 .map(ItemMapper::toItemDtoWithBooking)
                 .collect(Collectors.toList());
@@ -78,13 +86,19 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItemsByText(String searchText) {
-        if (searchText.isEmpty()) {
+    public List<ItemDto> getItemsByText(String text, int from, int size) {
+        if (from < 0 || size <= 0) {
+            log.error("Переданы некорректные значения from и/или size");
+            throw new ValidationException("Переданы некорректные значения from и/или size");
+        }
+        PageRequestOverride pageRequest = PageRequestOverride.of(from, size);
+
+        if (text.isEmpty()) {
             log.info("Результат поиска :");
             return new ArrayList<>();
         }
         log.info("Результат поиска :");
-        return itemRepository.search(searchText)
+        return itemRepository.search(text, pageRequest)
                 .stream()
                 .filter(Item::getAvailable)
                 .map(ItemMapper::toItemDto)
@@ -111,8 +125,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public void deleteItem(Long id) {
-        itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
-                String.format("Пользователя с %s не существует.", id)));
         log.info("Удалена вещь с id {}", id);
         itemRepository.deleteById(id);
     }

@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface ItemService {
 
-    List<ItemDtoWithBooking> getAllByUserId(Long userId);
+    List<ItemDtoWithBooking> getAllByUserId(Long userId, int from, int size);
 
     ItemDtoWithBooking getItemById(Long userId, Long itemId);
 
-    List<ItemDto> getItemsByText(String text);
+    List<ItemDto> getItemsByText(String text, int from, int size);
 
     ItemDto createItem(ItemDto itemDto, Long userId);
 

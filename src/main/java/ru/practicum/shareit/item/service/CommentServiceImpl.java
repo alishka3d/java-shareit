@@ -31,7 +31,6 @@ public class CommentServiceImpl implements CommentService{
     private final BookingRepository bookingRepository;
 
     @Override
-    @Transactional
     public CommentDto createComment(CommentDto commentDto, Long itemId, Long userId) {
         if (commentDto.getText().isBlank()) {
             log.error("Комментарий не может быть пустым.");

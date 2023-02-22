@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.PageRequestOverride;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
@@ -19,6 +20,7 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,50 +38,63 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public List<BookingDto> getAllBookings(Long userId, String stateParam) {
+    public List<BookingDto> getAllBookings(Long userId, String stateParam, int from, int size) {
+        validateStatus(stateParam, from, size);
+        PageRequestOverride pageRequest = PageRequestOverride.of(from, size);
         userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь %s не существует.", userId)));
         switch (State.valueOf(stateParam)) {
             case CURRENT:
-                log.info("Все бронирования пользователя {} со статусом {}", userId, stateParam);
                 return bookingRepository
-                        .findCurrentBookingsByBookerIdOrderByStartDesc(userId, LocalDateTime.now())
+                        .findCurrentBookingsByBookerIdOrderByStartDesc(
+                                userId,
+                                LocalDateTime.now(),
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case PAST:
-                log.info("Все бронирования пользователя {} со статусом {}", userId, stateParam);
                 return bookingRepository
-                        .findBookingsByBookerIdAndEndIsBeforeOrderByStartDesc(userId, LocalDateTime.now())
+                        .findBookingsByBookerIdAndEndIsBeforeOrderByStartDesc(
+                                userId,
+                                LocalDateTime.now(),
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case FUTURE:
-                log.info("Все бронирования пользователя {} со статусом {}", userId, stateParam);
                 return bookingRepository
-                        .findByBookerIdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now())
+                        .findByBookerIdAndStartAfterOrderByStartDesc(
+                                userId,
+                                LocalDateTime.now(),
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case WAITING:
-                log.info("Все бронирования пользователя {} со статусом {}", userId, stateParam);
                 return bookingRepository
-                        .findBookingsByBookerIdAndStatusOrderByStartDesc(userId, Status.WAITING)
+                        .findBookingsByBookerIdAndStatusOrderByStartDesc(
+                                userId,
+                                Status.WAITING,
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case REJECTED:
-                log.info("Все бронирования пользователя {} со статусом {}", userId, stateParam);
                 return bookingRepository
-                        .findBookingsByBookerIdAndStatusOrderByStartDesc(userId, Status.REJECTED)
+                        .findBookingsByBookerIdAndStatusOrderByStartDesc(
+                                userId,
+                                Status.REJECTED,
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             default:
-                log.info("Все бронирования пользователя {} ", userId);
                 return bookingRepository
-                        .findByBookerIdOrderByStartDesc(userId)
+                        .findByBookerIdOrderByStartDesc(
+                                userId,
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
@@ -100,60 +115,76 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingItemsUser(Long userId, String stateParam) {
+    public List<BookingDto> getAllBookingItemsUser(Long userId, String stateParam, int from, int size) {
+        validateStatus(stateParam, from, size);
         userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь %s не существует.", userId)));
-        List<BookingDto> bookingsUserList = bookingRepository.searchBookingByItemOwnerId(userId)
+        PageRequestOverride pageRequest = PageRequestOverride.of(from, size);
+
+        List<BookingDto> bookingsUserList = bookingRepository.searchBookingByItemOwnerIdOrderByStartDesc(
+                        userId,
+                        pageRequest)
                 .stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());
 
         if (bookingsUserList.isEmpty()) {
-            throw new EntityNotFoundException("У пользователя нет вещей");
+            log.error("У пользователя нет вещей.");
+            throw new EntityNotFoundException("У пользователя нет вещей.");
         }
 
         switch (State.valueOf(stateParam)) {
+            case ALL:
+                bookingsUserList.sort(Comparator.comparing(BookingDto::getStart).reversed());
+                return bookingsUserList;
             case CURRENT:
-                log.info("Текущие бронирования владельца с id {} ", userId);
                 return bookingRepository
-                        .findCurrentBookingsByItemOwnerIdOrderByStartDesc(userId, LocalDateTime.now())
+                        .findCurrentBookingsByItemOwnerIdOrderByStartDesc(
+                                userId,
+                                LocalDateTime.now(),
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case PAST:
-                log.info("Прошедшие бронирования владельца с id {} ", userId);
                 return bookingRepository
-                        .findBookingsByItemOwnerIdAndEndIsBeforeOrderByStartDesc(userId, LocalDateTime.now())
+                        .findBookingsByItemOwnerIdAndEndIsBefore(
+                                userId,
+                                LocalDateTime.now(),
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case FUTURE:
-                log.info("Будущие бронирования владельца с id {} ", userId);
                 return bookingRepository
-                        .searchBookingByItemOwnerIdAndStartIsAfterOrderByStartDesc(userId, LocalDateTime.now())
+                        .searchBookingByItemOwnerIdAndStartIsAfterOrderByStartDesc(
+                                userId,
+                                LocalDateTime.now(),
+                                pageRequest)
                         .stream()
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case WAITING:
-                log.info("Бронирования в ожидании владельца с id {} ", userId);
                 return bookingRepository
-                        .findBookingsByItemOwnerIdOrderByStartDesc(userId)
+                        .findBookingsByItemOwnerIdOrderByStartDesc(
+                                userId,
+                                pageRequest)
                         .stream()
                         .filter(booking -> booking.getStatus().equals(Status.WAITING))
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             case REJECTED:
-                log.info("Отклонённые бронирования владельца с id {} ", userId);
                 return bookingRepository
-                        .findBookingsByItemOwnerIdOrderByStartDesc(userId).stream()
+                        .findBookingsByItemOwnerIdOrderByStartDesc(
+                                userId,
+                                pageRequest)
+                        .stream()
                         .filter(booking -> booking.getStatus().equals(Status.REJECTED))
                         .map(BookingMapper::toBookingDto)
                         .collect(Collectors.toList());
             default:
-                log.info("Все бронирования владельца с id {} ", userId);
-                bookingsUserList.sort(Comparator.comparing(BookingDto::getStart).reversed());
-                return bookingsUserList;
+                return new ArrayList<>();
         }
     }
 
@@ -214,10 +245,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
     public void removeBookingById(Long bookingId) {
-        bookingRepository.findById(bookingId).orElseThrow(() -> new EntityNotFoundException(
-                String.format("Бронирование %s не существует.", bookingId)));
         log.info("Бронирование с id {} удалено", bookingId);
         bookingRepository.deleteById(bookingId);
     }
@@ -230,6 +258,18 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getEnd().isBefore(booking.getStart())) {
             log.error("ValidationException (Нельзя завершить бронь раньше ее регистрации)");
             throw new ValidationException("Завершение брони раньше ее регистрации");
+        }
+    }
+
+    private void validateStatus(String stateParam, int from, int size) {
+        State state = State.from(stateParam);
+        if (state == null) {
+            log.error("Unknown state: " + stateParam);
+            throw new IllegalArgumentException("Unknown state: " + stateParam);
+        }
+        if (from < 0 || size <= 0) {
+            log.error("Переданы некорректные значения from и/или size");
+            throw new ValidationException("Переданы некорректные значения from и/или size");
         }
     }
 }
